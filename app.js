@@ -25,7 +25,7 @@ const optimizeDialog = document.getElementById("optimize-dialog");
 // The four inputs per location, shared by the table, the sliders and saved scenarios.
 const FIELDS = [
   { key: "volume", inputClass: "volume-input", label: "Cargo volume", unit: "kg", fallbackMax: 10000 },
-  { key: "cargo", inputClass: "cargo-input", label: "Cargo price", unit: "$/kg", fallbackMax: 1 },
+  { key: "cargo", inputClass: "cargo-input", label: "Cargo rate", unit: "$/kg", fallbackMax: 1 },
   { key: "fuelPrice", inputClass: "fuel-price-input", label: "Fuel price", unit: "$/gal", fallbackMax: 10 },
   { key: "fuelGal", inputClass: "fuel-gal-input", label: "Fuel volume", unit: "gal", fallbackMax: 1000 },
 ];
@@ -63,7 +63,7 @@ function addLocation() {
       <button type="button" class="remove" title="Remove location" aria-label="Remove location ${id}">×</button>
     </div>`);
   insertCell(rows.volume, "td", id, numberInput("volume-input", `Cargo volume for location ${id} in kg`, "kg"));
-  insertCell(rows.cargo, "td", id, numberInput("cargo-input", `Cargo price for location ${id} in dollars per kg`, "$/kg"));
+  insertCell(rows.cargo, "td", id, numberInput("cargo-input", `Cargo rate for location ${id} in dollars per kg`, "$/kg"));
   insertCell(rows.fuelPrice, "td", id, numberInput("fuel-price-input", `Fuel price for location ${id} in dollars per US gallon`, "$/gal"));
   insertCell(rows.fuelGal, "td", id, numberInput("fuel-gal-input", `Fuel volume for location ${id} in US gallons`, "gal"));
   for (const key of ["fuelTotal", "revenue", "profit"]) insertCell(rows[key], "td", id, "—");
@@ -134,7 +134,7 @@ function update(source = null) {
     ? { name: "Overall", overall: true, count: complete.length, revenue: sum("revenue"), fuel: sum("fuel"), profit: sum("profit") }
     : null;
 
-  // Overall profit spans all location columns
+  // Overall revenue spans all location columns
   overallCell.colSpan = locations.length;
   overallCell.textContent = overall ? money(overall.profit) : "—";
   overallCell.className = overall ? (overall.profit < 0 ? "neg" : "pos") : "";
@@ -153,9 +153,9 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const H = 300;
 const M = { top: 16, right: 12, bottom: 40, left: 60 };
 const SERIES = [
-  { key: "revenue", label: "Cargo revenue" },
+  { key: "revenue", label: "Cargo income" },
   { key: "fuel", label: "Fuel total" },
-  { key: "profit", label: "Profit" },
+  { key: "profit", label: "Revenue" },
 ];
 const BAR_GAP = 2;
 const RADIUS = 4;
@@ -197,7 +197,7 @@ function renderChart(complete, overall) {
   const locations = overall ? [...complete, overall] : complete;
   chartEl.replaceChildren();
   if (!locations.length) {
-    chartEl.innerHTML = `<p class="empty">Enter volume, cargo price, fuel price and fuel to see the chart.</p>`;
+    chartEl.innerHTML = `<p class="empty">Enter volume, cargo rate, fuel price and fuel to see the chart.</p>`;
     return;
   }
 
@@ -212,7 +212,7 @@ function renderChart(complete, overall) {
   const barW = Math.min(36, (groupW * 0.7 - BAR_GAP * (SERIES.length - 1)) / SERIES.length);
   const clusterW = barW * SERIES.length + BAR_GAP * (SERIES.length - 1);
 
-  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Cargo revenue, fuel total and profit by location, and overall" });
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Cargo income, fuel total and revenue by location, and overall" });
 
   const grid = svgEl("g", { class: "grid" }, svg);
   for (const t of yTicks) {
@@ -264,7 +264,7 @@ function renderChart(complete, overall) {
       hit.addEventListener("pointerleave", hide);
     });
 
-    // Direct label on the profit bar only
+    // Direct label on the revenue bar only
     const py = y(loc.profit);
     const px = cx + 2 * (barW + BAR_GAP) + barW / 2;
     svgEl("text", { x: px, y: loc.profit >= 0 ? py - 6 : py + 14, "text-anchor": "middle", class: "value-label" }, svg).textContent = shortMoney(loc.profit);
@@ -412,8 +412,8 @@ function syncSliders(locations, source) {
 
 // ---------- Optimization ----------
 
-// Profit at one location is cargo volume × cargo price − fuel price × fuel, and fuel rises in a
-// straight line with cargo. So each extra kg of cargo earns the cargo price but costs
+// Revenue at one location is cargo volume × cargo rate − fuel price × fuel, and fuel rises in a
+// straight line with cargo. So each extra kg of cargo earns the cargo rate but costs
 // (extra gallons of fuel per kg of cargo) × fuel price. If it earns more than it costs, carry the max;
 // otherwise carry the min. Locations don't affect each other, so each is solved on its own.
 let optimizeShown = false;
@@ -449,7 +449,7 @@ function findMissing(locations) {
   for (const loc of locations) {
     const r = getRange(loc.col);
     const missing = [];
-    if (loc.cargo === null) missing.push("Cargo price");
+    if (loc.cargo === null) missing.push("Cargo rate");
     if (loc.fuelPrice === null) missing.push("Fuel price");
     const emptyKeys = RANGE_KEYS.filter((k) => r[k] === null);
     missing.push(...emptyKeys.map((k) => RANGE_LABELS[k]));
@@ -530,13 +530,13 @@ function renderOptimize(locations, overall) {
           ${row("Best cargo volume", results.map((r) => kg(r.volume)))}
           ${row("Fuel volume needed", results.map((r) => gal(r.fuelGal)))}
           ${row("Why", results.map((r) => `Each kg of cargo earns ${perKg(r.earnPerKg)} and needs ${perKg(r.fuelCostPerKg)} of fuel, so carry the <b>${r.earnPerKg >= r.fuelCostPerKg ? "max" : "min"}</b>`), "why")}
-          ${row(`Profit <span class="unit">$</span>`, results.map((r) => `<span class="${r.profit < 0 ? "neg" : "pos"}">${money(r.profit)}</span>`), "result-row")}
-          <tr class="result-row overall-row"><th class="row-label">Overall profit <span class="unit">$</span></th><td colspan="${results.length}" class="${bestOverall < 0 ? "neg" : "pos"}">${money(bestOverall)}</td></tr>
+          ${row(`Revenue <span class="unit">$</span>`, results.map((r) => `<span class="${r.profit < 0 ? "neg" : "pos"}">${money(r.profit)}</span>`), "result-row")}
+          <tr class="result-row overall-row"><th class="row-label">Overall revenue <span class="unit">$</span></th><td colspan="${results.length}" class="${bestOverall < 0 ? "neg" : "pos"}">${money(bestOverall)}</td></tr>
         </tbody>
       </table>
     </div>
     <div class="optimal-summary">
-      <p>Best overall profit: <b class="${bestOverall < 0 ? "neg" : "pos"}">${money(bestOverall)}</b>${compareText(diff, overall)}</p>
+      <p>Best overall revenue: <b class="${bestOverall < 0 ? "neg" : "pos"}">${money(bestOverall)}</b>${compareText(diff, overall)}</p>
       <button type="button" id="apply-optimal" class="primary">Use and save these values</button>
     </div>`;
   optimizeEl.querySelectorAll("thead th").forEach((th, i) => {
@@ -630,7 +630,7 @@ function renderSaved() {
   const best = bestSaved();
   const table = document.createElement("table");
   table.className = "saved-table";
-  table.innerHTML = `<thead><tr><th>#</th><th>Saved</th><th>Profit per location</th><th>Overall profit</th><th></th></tr></thead><tbody></tbody>`;
+  table.innerHTML = `<thead><tr><th>#</th><th>Saved</th><th>Revenue per location</th><th>Overall revenue</th><th></th></tr></thead><tbody></tbody>`;
   const tbody = table.querySelector("tbody");
   for (const s of [...saved].reverse()) {
     const tr = document.createElement("tr");
@@ -666,24 +666,24 @@ function renderCompare(overall) {
   const best = bestSaved();
   if (!overall) {
     compareEl.className = "compare";
-    compareEl.textContent = "Fill in every location to see the overall profit.";
+    compareEl.textContent = "Fill in every location to see the overall revenue.";
     return;
   }
   if (!best) {
     compareEl.className = "compare";
-    compareEl.innerHTML = `Overall profit now: <b>${money(overall.profit)}</b>. Save it to compare other values against it.`;
+    compareEl.innerHTML = `Overall revenue now: <b>${money(overall.profit)}</b>. Save it to compare other values against it.`;
     return;
   }
   const diff = overall.profit - best.overall;
   if (Math.abs(diff) < 0.005) {
     compareEl.className = "compare";
-    compareEl.innerHTML = `Overall profit now: <b>${money(overall.profit)}</b>, the same as your best saved (#${best.number}).`;
+    compareEl.innerHTML = `Overall revenue now: <b>${money(overall.profit)}</b>, the same as your best saved (#${best.number}).`;
   } else if (diff > 0) {
     compareEl.className = "compare higher";
-    compareEl.innerHTML = `▲ Overall profit now: <b>${money(overall.profit)}</b>, <b>${money(diff)} higher</b> than your best saved (#${best.number}). Click <b>Save</b> to keep it.`;
+    compareEl.innerHTML = `▲ Overall revenue now: <b>${money(overall.profit)}</b>, <b>${money(diff)} higher</b> than your best saved (#${best.number}). Click <b>Save</b> to keep it.`;
   } else {
     compareEl.className = "compare lower";
-    compareEl.innerHTML = `▼ Overall profit now: <b>${money(overall.profit)}</b>, ${money(-diff)} lower than your best saved (#${best.number}).`;
+    compareEl.innerHTML = `▼ Overall revenue now: <b>${money(overall.profit)}</b>, ${money(-diff)} lower than your best saved (#${best.number}).`;
   }
 }
 

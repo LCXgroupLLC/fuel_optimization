@@ -9,7 +9,7 @@
 <body>
   <main>
     <h1>Fuel and Cargo Volume Optimization</h1>
-    <p class="intro"><b>Profit = cargo volume × cargo price − (fuel price × fuel volume)</b></p>
+    <p class="intro"><b>Revenue = cargo volume × cargo rate − (fuel price × fuel volume)</b></p>
 
     <div class="table-wrap">
       <table id="locations">
@@ -23,26 +23,26 @@
         </thead>
         <tbody>
           <tr id="row-volume" class="input-row"><th class="row-label">Cargo volume <span class="unit">kg</span></th><td class="add-col"></td></tr>
-          <tr id="row-cargo" class="input-row"><th class="row-label">Cargo price <span class="unit">$/kg</span></th><td class="add-col"></td></tr>
+          <tr id="row-cargo" class="input-row"><th class="row-label">Cargo rate <span class="unit">$/kg</span></th><td class="add-col"></td></tr>
           <tr id="row-fuel-price" class="input-row"><th class="row-label">Fuel price <span class="unit">$/gal</span></th><td class="add-col"></td></tr>
           <tr id="row-fuel-gal" class="input-row"><th class="row-label">Fuel volume <span class="unit">US gal</span></th><td class="add-col"></td></tr>
           <tr id="row-fuel-total" class="computed-row"><th class="row-label">Fuel total <span class="unit">$</span></th><td class="add-col"></td></tr>
-          <tr id="row-revenue" class="computed-row"><th class="row-label">Cargo revenue <span class="unit">$</span></th><td class="add-col"></td></tr>
-          <tr id="row-profit" class="result-row first-result"><th class="row-label">Profit <span class="unit">$</span></th><td class="add-col"></td></tr>
-          <tr id="row-overall" class="result-row overall-row"><th class="row-label">Overall profit <span class="unit">$</span></th><td id="overall-profit">—</td><td class="add-col"></td></tr>
+          <tr id="row-revenue" class="computed-row"><th class="row-label">Cargo income <span class="unit">$</span></th><td class="add-col"></td></tr>
+          <tr id="row-profit" class="result-row first-result"><th class="row-label">Revenue <span class="unit">$</span></th><td class="add-col"></td></tr>
+          <tr id="row-overall" class="result-row overall-row"><th class="row-label">Overall revenue <span class="unit">$</span></th><td id="overall-profit">—</td><td class="add-col"></td></tr>
         </tbody>
       </table>
     </div>
 
     <section aria-labelledby="charts-title">
       <div class="section-head">
-        <h2 id="charts-title">Profit by location and overall</h2>
+        <h2 id="charts-title">Revenue by location and overall</h2>
         <button id="save" type="button" class="primary">Save</button>
       </div>
       <div class="legend" aria-hidden="true">
-        <span><i class="swatch s-revenue"></i>Cargo revenue</span>
+        <span><i class="swatch s-revenue"></i>Cargo income</span>
         <span><i class="swatch s-fuel"></i>Fuel total</span>
-        <span><i class="swatch s-profit"></i>Profit</span>
+        <span><i class="swatch s-profit"></i>Revenue</span>
       </div>
       <div id="chart" class="chart"></div>
     </section>
@@ -63,7 +63,7 @@
         <h2 id="optimize-title">Optimal values</h2>
         <button id="optimize" type="button" class="primary">Compute optimal</button>
       </div>
-      <p class="hint">Finds the cargo volume in each min–max range that gives the most overall profit, with the cargo and fuel prices as they are.</p>
+      <p class="hint">Finds the cargo volume in each min–max range that gives the most overall revenue, with the cargo rate and fuel price as they are.</p>
       <div id="optimal"></div>
     </section>
 
