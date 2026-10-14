@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fuel and Cargo Optimization</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Fuel and Cargo Volume Optimization</h1>
+    <p class="intro"><b>Profit = cargo volume × cargo price − (fuel price × fuel volume)</b></p>
+
+    <div class="table-wrap">
+      <table id="locations">
+        <thead>
+          <tr id="row-location">
+            <th class="row-label">Location</th>
+            <th class="add-col">
+              <button id="add-location" type="button" title="Add location" aria-label="Add location">+</button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row-volume" class="input-row"><th class="row-label">Cargo volume <span class="unit">kg</span></th><td class="add-col"></td></tr>
+          <tr id="row-cargo" class="input-row"><th class="row-label">Cargo price <span class="unit">$/kg</span></th><td class="add-col"></td></tr>
+          <tr id="row-fuel-price" class="input-row"><th class="row-label">Fuel price <span class="unit">$/gal</span></th><td class="add-col"></td></tr>
+          <tr id="row-fuel-gal" class="input-row"><th class="row-label">Fuel volume <span class="unit">US gal</span></th><td class="add-col"></td></tr>
+          <tr id="row-fuel-total" class="computed-row"><th class="row-label">Fuel total <span class="unit">$</span></th><td class="add-col"></td></tr>
+          <tr id="row-revenue" class="computed-row"><th class="row-label">Cargo revenue <span class="unit">$</span></th><td class="add-col"></td></tr>
+          <tr id="row-profit" class="result-row first-result"><th class="row-label">Profit <span class="unit">$</span></th><td class="add-col"></td></tr>
+          <tr id="row-overall" class="result-row overall-row"><th class="row-label">Overall profit <span class="unit">$</span></th><td id="overall-profit">—</td><td class="add-col"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <section aria-labelledby="charts-title">
+      <div class="section-head">
+        <h2 id="charts-title">Profit by location and overall</h2>
+        <button id="save" type="button" class="primary">Save</button>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="swatch s-revenue"></i>Cargo revenue</span>
+        <span><i class="swatch s-fuel"></i>Fuel total</span>
+        <span><i class="swatch s-profit"></i>Profit</span>
+      </div>
+      <div id="chart" class="chart"></div>
+    </section>
+
+    <section aria-labelledby="adjust-title">
+      <h2 id="adjust-title">Adjust values</h2>
+      <p class="hint">
+        Drag to change the inputs; the table and chart update as you go.
+        Set a min and max cargo volume, and the fuel volume you need at the min and at the max cargo.
+        Fuel volume then moves with the cargo volume.
+      </p>
+      <p id="compare" class="compare" role="status"></p>
+      <div id="sliders" class="sliders"></div>
+    </section>
+
+    <section aria-labelledby="optimize-title">
+      <div class="section-head">
+        <h2 id="optimize-title">Optimal values</h2>
+        <button id="optimize" type="button" class="primary">Compute optimal</button>
+      </div>
+      <p class="hint">Finds the cargo volume in each min–max range that gives the most overall profit, with the cargo and fuel prices as they are.</p>
+      <div id="optimal"></div>
+    </section>
+
+    <section aria-labelledby="saved-title">
+      <h2 id="saved-title">Saved</h2>
+      <div id="saved"></div>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+  <dialog id="optimize-dialog" aria-labelledby="optimize-dialog-title">
+    <h3 id="optimize-dialog-title">Can't compute the optimal values</h3>
+    <p>The min and max values under <b>Adjust values</b> (and the prices) must be filled in first. Missing:</p>
+    <ul></ul>
+    <div class="dialog-actions"><button type="button" class="primary">OK</button></div>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
